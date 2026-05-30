@@ -28,7 +28,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 
 export function DialogContent({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={cn("relative z-10 w-full max-w-lg rounded-xl border border-border_grey bg-white p-5", className)}>
+    <div className={cn("relative z-10 w-full max-w-lg rounded-xl border border-border_grey bg-card_bg p-5", className)}>
       {children}
     </div>
   );

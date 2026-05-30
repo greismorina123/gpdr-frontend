@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OwnerTable } from "@/components/owner-table";
-import { static_admin_data } from "@/context/app-state";
+import { owner_summaries } from "@/lib/mock-data";
 
 export function DataOwnersPage() {
-  const owners = static_admin_data.owner_summaries;
+  const owners = owner_summaries;
 
   const direct_owners = owners.filter((owner) => owner.type === "direct").length;
   const masters_of_data = owners.filter((owner) => owner.type === "master_of_data").length;
@@ -14,9 +14,7 @@ export function DataOwnersPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-semibold text-text_dark">Data owners and Masters of Data</h1>
-        <p className="mt-1 text-sm text-text_medium">
-          Findings are routed either to direct owners or to a Master of Data for shared sources.
-        </p>
+        <p className="mt-1 text-sm text-text_medium">Ownership routing and review workload by assignee.</p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -31,7 +29,7 @@ export function DataOwnersPage() {
         <CardHeader>
           <CardTitle>Owner routing summary</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-auto">
           <OwnerTable owners={owners} />
         </CardContent>
       </Card>
@@ -41,7 +39,7 @@ export function DataOwnersPage() {
           <CardTitle>Routing rules</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-text_dark">
-          <p>1. If path matches /data/onedrive/{"{username}"}/, route to direct owner.</p>
+          <p>1. If path matches <span className="font-mono">/data/onedrive/{"{username}"}/</span>, route to direct owner.</p>
           <p>
             2. Else if path is under a configured Master of Data source, route to that Master of Data.
           </p>
@@ -55,8 +53,8 @@ export function DataOwnersPage() {
 function SummaryCard({ title, value, accent }: { title: string; value: number; accent?: string }) {
   return (
     <Card className="p-3">
-      <p className="text-xs uppercase tracking-wide text-text_medium">{title}</p>
-      <p className={`mt-1 text-2xl font-semibold ${accent ?? "text-text_dark"}`}>{value}</p>
+      <p className="text-[11px] uppercase tracking-wide text-text_medium">{title}</p>
+      <p className={`mt-1 text-2xl font-semibold leading-none ${accent ?? "text-text_dark"}`}>{value}</p>
     </Card>
   );
 }

@@ -10,6 +10,26 @@ export function format_document_type(value: string): string {
 }
 
 export function format_review_status(value: string): string {
+  if (value === "pending") {
+    return "Pending review";
+  }
+
+  if (value === "confirmed_business_need" || value === "kept_business_need") {
+    return "Business need";
+  }
+
+  if (value === "acknowledged_cleanup") {
+    return "Cleanup noted";
+  }
+
+  if (value === "marked_false_positive") {
+    return "False positive";
+  }
+
+  if (value === "deleted") {
+    return "Deleted";
+  }
+
   return value
     .split("_")
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))

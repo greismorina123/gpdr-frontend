@@ -10,15 +10,15 @@ export function Badge({
 }: HTMLAttributes<HTMLSpanElement> & { variant?: BadgeVariant }) {
   const variant_class =
     variant === "default"
-      ? "bg-slate-100 text-slate-800"
+      ? "border-slate-300 bg-slate-100 text-slate-800"
       : variant === "secondary"
-        ? "bg-gray-100 text-gray-700"
-        : "border border-border_grey bg-white text-text_dark";
+        ? "border-slate-300 bg-slate-100 text-slate-700"
+        : "border-border_grey bg-card_bg text-text_dark";
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md px-2 py-1 text-xs font-medium",
+        "inline-flex h-5 items-center rounded-md border px-2 py-0 text-[11px] font-semibold tracking-wide",
         variant_class,
         className
       )}

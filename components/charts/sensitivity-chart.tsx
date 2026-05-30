@@ -30,7 +30,10 @@ export function SensitivityChart({
               <Cell key={entry.name} fill={color_map[entry.name.toLowerCase()] ?? "#94a3b8"} />
             ))}
           </Pie>
-          <Tooltip />
+          <Tooltip
+            contentStyle={{ borderRadius: 8, border: "1px solid #CBD5E1", fontSize: 12 }}
+            labelStyle={{ color: "#334155", fontWeight: 600 }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

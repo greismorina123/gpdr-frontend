@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export function OwnerTable({ owners }: { owners: OwnerSummary[] }) {
   return (
-    <Table>
+    <Table className="min-w-[920px]">
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
@@ -18,15 +18,15 @@ export function OwnerTable({ owners }: { owners: OwnerSummary[] }) {
       </TableHeader>
       <TableBody>
         {owners.map((owner) => (
-          <TableRow key={owner.user_id}>
-            <TableCell className="font-medium">{owner.name}</TableCell>
+          <TableRow key={owner.user_id} className="hover:bg-slate-50/80">
+            <TableCell className="font-medium text-text_dark">{owner.name}</TableCell>
             <TableCell>
               <StatusBadge value={owner.type} />
             </TableCell>
             <TableCell>
               <div className="space-y-1">
                 {owner.assigned_sources.map((source) => (
-                  <p className="font-mono text-xs" key={source}>
+                  <p className="font-mono text-[13px]" key={source}>
                     {source}
                   </p>
                 ))}

@@ -11,13 +11,11 @@ import {
 } from "@/types/models";
 
 export const app_nav_items = [
-  { href: "/overview", label: "Overview" },
   { href: "/run-scan", label: "Run scan" },
   { href: "/my-findings", label: "My findings" },
   { href: "/admin-dashboard", label: "Admin dashboard" },
   { href: "/data-owners", label: "Data owners" },
-  { href: "/audit-log", label: "Audit log" },
-  { href: "/system-contract", label: "System contract" }
+  { href: "/audit-log", label: "Audit log" }
 ] as const;
 
 export const users: User[] = [
@@ -956,15 +954,15 @@ export const overview_summary_items = [
   },
   {
     title: "Context classification",
-    text: "Document type, sensitivity, entities, retention recommendation."
+    text: "Document type, sensitivity, entities, retention."
   },
   {
     title: "Owner routing",
-    text: "Direct owner or Master of Data."
+    text: "Direct owner or Master of Data queue."
   },
   {
     title: "Human decision",
-    text: "Business need or cleanup is confirmed by the responsible user."
+    text: "Business need or cleanup confirmed by reviewer."
   }
 ];
 

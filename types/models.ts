@@ -55,7 +55,13 @@ export type Finding = {
   owner_type: "direct" | "master_of_data";
   master_of_data_id: string | null;
   scan_timestamp: string;
-  review_status: "pending" | "confirmed_business_need" | "acknowledged_cleanup";
+  review_status:
+    | "pending"
+    | "confirmed_business_need"
+    | "acknowledged_cleanup"
+    | "kept_business_need"
+    | "marked_false_positive"
+    | "deleted";
   reviewed_by_user_id: string | null;
   reviewed_at: string | null;
   review_note: string | null;
@@ -99,6 +105,13 @@ export type DashboardStats = {
     findings_count: number;
     scan_type?: "full" | "delta";
   }[];
+  last_scan_timing_breakdown?: {
+    extract_ms?: number;
+    presidio_ms?: number;
+    llm_ms?: number;
+    db_ms?: number;
+  } | null;
+  files_past_retention?: number;
 };
 
 export type OwnerSummary = {
@@ -119,7 +132,13 @@ export type AuditEntry = {
   user: string;
   action: string;
   review_note: string;
-  resulting_status: "pending" | "confirmed_business_need" | "acknowledged_cleanup";
+  resulting_status:
+    | "pending"
+    | "confirmed_business_need"
+    | "acknowledged_cleanup"
+    | "kept_business_need"
+    | "marked_false_positive"
+    | "deleted";
 };
 
 export type SourceOption = {

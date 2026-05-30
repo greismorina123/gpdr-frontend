@@ -8,16 +8,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { use_app_state } from "@/context/app-state";
 import { format_document_type, format_timestamp } from "@/lib/utils";
 
-export function MyFindingsPage() {
-  const { users, selected_user_id, findings, apply_finding_action } = use_app_state();
-  const [selected_finding_id, set_selected_finding_id] = useState<string | null>(null);
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000").replace(/\/+$/, "");
 
-  const selected_user = useMemo(
-    () => users.find((user) => user.id === selected_user_id) ?? users[0],
-    [selected_user_id, users]
-  );
+export function MyFindingsPage() {
+  const { selected_user, selected_user_id, findings, is_findings_loading, fetch_finding_detail, apply_finding_action } =
+    use_app_state();
+  const [selected_finding_id, set_selected_finding_id] = useState<string | null>(null);
+  const [selected_finding_detail, set_selected_finding_detail] = useState<null | (typeof findings)[number]>(null);
 
   const my_findings = useMemo(() => {
+    if (!selected_user_id || !selected_user) {
+      return [];
+    }
+
     return findings.filter((finding) => {
       if (finding.owner_user_id === selected_user_id) {
         return true;
@@ -29,43 +32,86 @@ export function MyFindingsPage() {
 
       return false;
     });
-  }, [findings, selected_user.is_master_of_data, selected_user_id]);
+  }, [findings, selected_user, selected_user_id]);
 
   useEffect(() => {
     if (my_findings.length === 0) {
       set_selected_finding_id(null);
+      set_selected_finding_detail(null);
       return;
     }
 
     const still_exists = my_findings.some((finding) => finding.id === selected_finding_id);
     if (!still_exists) {
       set_selected_finding_id(my_findings[0].id);
+      set_selected_finding_detail(null);
     }
   }, [my_findings, selected_finding_id]);
 
+  useEffect(() => {
+    let is_cancelled = false;
+
+    const load_selected_finding_detail = async () => {
+      if (!selected_finding_id) {
+        set_selected_finding_detail(null);
+        return;
+      }
+
+      const detailed_finding = await fetch_finding_detail(selected_finding_id);
+      if (!is_cancelled && detailed_finding && detailed_finding.id === selected_finding_id) {
+        set_selected_finding_detail(detailed_finding);
+      }
+    };
+
+    load_selected_finding_detail();
+
+    return () => {
+      is_cancelled = true;
+    };
+  }, [fetch_finding_detail, selected_finding_id]);
+
+  useEffect(() => {
+    if (!selected_finding_id || !selected_finding_detail) {
+      return;
+    }
+
+    if (selected_finding_detail.id !== selected_finding_id) {
+      return;
+    }
+
+    const latest = my_findings.find((finding) => finding.id === selected_finding_id);
+    if (latest && latest.review_status !== selected_finding_detail.review_status) {
+      set_selected_finding_detail(latest);
+    }
+  }, [my_findings, selected_finding_detail, selected_finding_id]);
+
   const selected_finding = useMemo(
-    () => my_findings.find((finding) => finding.id === selected_finding_id) ?? null,
-    [my_findings, selected_finding_id]
+    () =>
+      selected_finding_detail && selected_finding_detail.id === selected_finding_id
+        ? selected_finding_detail
+        : my_findings.find((finding) => finding.id === selected_finding_id) ?? null,
+    [my_findings, selected_finding_detail, selected_finding_id]
   );
 
   const pending_reviews = my_findings.filter((finding) => finding.review_status === "pending").length;
   const high_sensitivity = my_findings.filter((finding) => finding.sensitivity_level === "high").length;
   const medium_sensitivity = my_findings.filter((finding) => finding.sensitivity_level === "medium").length;
-  const confirmed_business_need = my_findings.filter(
-    (finding) => finding.review_status === "confirmed_business_need"
+  const confirmed_business_need = my_findings.filter((finding) =>
+    finding.review_status === "confirmed_business_need" || finding.review_status === "kept_business_need"
   ).length;
-  const cleanup_acknowledged = my_findings.filter(
-    (finding) => finding.review_status === "acknowledged_cleanup"
+  const cleanup_acknowledged = my_findings.filter((finding) =>
+    finding.review_status === "acknowledged_cleanup" || finding.review_status === "marked_false_positive"
   ).length;
 
+  if (!selected_user_id || !selected_user) {
+    return null;
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="min-w-0 space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-text_dark">My flagged files</h1>
-        <p className="mt-1 text-sm text-text_medium">
-          Review files you own or are responsible for. The scanner suggests actions, but you have the final
-          word.
-        </p>
+        <h1 className="text-2xl font-semibold text-text_dark">My review queue</h1>
+        <p className="mt-1 text-sm text-text_medium">Findings assigned to you for review and decision.</p>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
@@ -76,25 +122,31 @@ export function MyFindingsPage() {
         <SummaryCard title="Cleanup acknowledged" value={cleanup_acknowledged} accent="text-success_green" />
       </div>
 
+      {is_findings_loading ? (
+        <Card>
+          <CardContent className="py-8 text-sm text-text_medium">Loading findings for {selected_user.name}...</CardContent>
+        </Card>
+      ) : null}
+
       {my_findings.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center">
             <p className="text-lg font-semibold text-text_dark">No findings assigned to {selected_user.name}</p>
             <p className="mt-2 text-sm text-text_medium">
-              Try switching to Sara Hoffmann (`u_001`) to review the primary demo workflow.
+              Switch user to view another review queue.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-3 xl:grid-cols-[1.45fr_1fr]">
-          <Card>
+        <div className="grid min-w-0 gap-3 xl:grid-cols-[1.55fr_1fr]">
+          <Card className="min-w-0">
             <CardHeader>
               <CardTitle>Findings</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-w-0">
               <div className="max-h-[72vh] overflow-auto">
-                <Table>
-                  <TableHeader>
+                <Table className="min-w-[1050px]">
+                  <TableHeader className="sticky top-0 z-10">
                     <TableRow>
                       <TableHead>File name</TableHead>
                       <TableHead>Document type</TableHead>
@@ -102,7 +154,6 @@ export function MyFindingsPage() {
                       <TableHead className="text-right">Entity count</TableHead>
                       <TableHead>Scan timestamp</TableHead>
                       <TableHead>Review status</TableHead>
-                      <TableHead>Retention recommendation</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -112,8 +163,15 @@ export function MyFindingsPage() {
                       return (
                         <TableRow
                           key={finding.id}
-                          className={active ? "bg-bosch_red/5" : "cursor-pointer hover:bg-gray-50"}
-                          onClick={() => set_selected_finding_id(finding.id)}
+                          className={
+                            active
+                              ? "cursor-pointer border-l-2 border-l-bosch_red bg-bosch_red/5"
+                              : "cursor-pointer hover:bg-slate-50"
+                          }
+                          onClick={() => {
+                            set_selected_finding_id(finding.id);
+                            set_selected_finding_detail(null);
+                          }}
                         >
                           <TableCell className="font-medium">{finding.file_name}</TableCell>
                           <TableCell>{format_document_type(finding.document_type)}</TableCell>
@@ -125,7 +183,6 @@ export function MyFindingsPage() {
                           <TableCell>
                             <StatusBadge value={finding.review_status} />
                           </TableCell>
-                          <TableCell className="text-xs text-text_medium">{finding.retention_recommendation}</TableCell>
                         </TableRow>
                       );
                     })}
@@ -135,13 +192,15 @@ export function MyFindingsPage() {
             </CardContent>
           </Card>
 
-          <FindingDetailPanel
-            finding={selected_finding}
-            on_apply_action={(finding_id, review_status, review_note) => {
-              // TODO backend integration: POST /findings/{finding_id}/action
-              apply_finding_action({ finding_id, review_status, review_note });
-            }}
-          />
+          <div className="min-w-0">
+            <FindingDetailPanel
+              finding={selected_finding}
+              preview_url={selected_finding ? `${API_BASE_URL}/files/${selected_finding.file_id}/preview` : undefined}
+              on_apply_action={async (finding_id, review_status, review_note) => {
+                await apply_finding_action({ finding_id, review_status, review_note });
+              }}
+            />
+          </div>
         </div>
       )}
     </div>
@@ -151,8 +210,8 @@ export function MyFindingsPage() {
 function SummaryCard({ title, value, accent }: { title: string; value: number; accent?: string }) {
   return (
     <Card className="p-3">
-      <p className="text-xs uppercase tracking-wide text-text_medium">{title}</p>
-      <p className={`mt-1 text-2xl font-semibold ${accent ?? "text-text_dark"}`}>{value}</p>
+      <p className="text-[11px] uppercase tracking-wide text-text_medium">{title}</p>
+      <p className={`mt-1 text-2xl font-semibold leading-none ${accent ?? "text-text_dark"}`}>{value}</p>
     </Card>
   );
 }

@@ -99,13 +99,10 @@ export function RunScanPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-semibold text-text_dark">Run scan</h1>
-        <p className="mt-1 text-sm text-text_medium">
-          Run a full or delta scan and inspect speed, skipped files, findings count, and deterministic result
-          hash.
-        </p>
+        <p className="mt-1 text-sm text-text_medium">Start a full or delta scan and monitor execution metrics.</p>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-[2fr_1fr]">
+      <div className="grid gap-3 lg:grid-cols-[1.75fr_1fr]">
         <Card>
           <CardHeader>
             <CardTitle>Scan configuration</CardTitle>
@@ -120,6 +117,7 @@ export function RunScanPage() {
                   </SelectItem>
                 ))}
               </Select>
+              <p className="mt-1 font-mono text-xs text-text_medium">{source.path}</p>
             </div>
 
             <Tabs>
@@ -132,11 +130,11 @@ export function RunScanPage() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent className="mt-3 grid gap-3 md:grid-cols-2">
-                <Card className="p-3">
+                <Card className="border border-bosch_blue/25 bg-bosch_blue/5 p-3 shadow-none">
                   <p className="text-sm font-semibold text-text_dark">Full scan</p>
                   <p className="mt-1 text-sm text-text_medium">Processes all files in the selected source.</p>
                 </Card>
-                <Card className="p-3">
+                <Card className="border border-process_cyan/25 bg-process_cyan/5 p-3 shadow-none">
                   <p className="text-sm font-semibold text-text_dark">Delta scan</p>
                   <p className="mt-1 text-sm text-text_medium">
                     Processes only new or changed files using SHA256 file hashes.
@@ -154,12 +152,12 @@ export function RunScanPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Reproducibility proof</CardTitle>
+            <CardTitle>Reproducibility note</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-text_dark">
-              Same input files + same ruleset + deterministic ordering = same result hash. Delta scan skips
-              unchanged files using SHA256 file hashes.
+              Same input plus same ruleset yields the same result hash. Delta scans skip unchanged files by
+              SHA256.
             </p>
           </CardContent>
         </Card>
@@ -171,6 +169,10 @@ export function RunScanPage() {
             <CardTitle>Mock scan progress</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wide text-text_medium">Progress</p>
+              <p className="font-mono text-xs text-text_dark">{progress_pct}%</p>
+            </div>
             <Progress value={progress_pct} />
             <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
               <Metric label="Current source path" value={source.path} monospace />
@@ -179,11 +181,14 @@ export function RunScanPage() {
               <Metric label="Files skipped" value={String(progress_files_skipped)} />
               <Metric label="Files with findings" value={String(progress_files_with_findings)} />
               <Metric label="Duration" value={`${progress_duration}s`} />
-              <Metric label="Scan speed" value={`${target.files_processed > 0 ? Math.max(1, Math.round(progress_files_processed / Math.max(progress_duration, 0.5))) : 0} files/sec`} />
+              <Metric
+                label="Scan speed"
+                value={`${target.files_processed > 0 ? Math.max(1, Math.round(progress_files_processed / Math.max(progress_duration, 0.5))) : 0} files/sec`}
+              />
               <Metric label="Result hash" value={progress_pct === 100 ? target.result_hash : "..."} monospace />
             </div>
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-text_medium">Status</p>
+            <div className="flex items-center gap-2 rounded-lg border border-border_grey/70 bg-slate-50 px-2.5 py-2">
+              <p className="text-xs uppercase tracking-wide text-text_medium">Status</p>
               <StatusBadge value={is_running ? "running" : "completed"} />
             </div>
           </CardContent>
@@ -214,9 +219,9 @@ export function RunScanPage() {
 
 function Metric({ label, value, monospace }: { label: string; value: string; monospace?: boolean }) {
   return (
-    <div className="rounded-lg border border-border_grey bg-gray-50 px-3 py-2">
-      <p className="text-xs uppercase tracking-wide text-text_medium">{label}</p>
-      <p className={`${monospace ? "font-mono text-xs" : "text-sm"} mt-1 text-text_dark`}>{value}</p>
+    <div className="rounded-lg border border-border_grey/70 bg-slate-50 px-2.5 py-2">
+      <p className="text-[11px] uppercase tracking-wide text-text_medium">{label}</p>
+      <p className={`${monospace ? "font-mono text-[13px]" : "text-sm"} mt-1 text-text_dark`}>{value}</p>
     </div>
   );
 }

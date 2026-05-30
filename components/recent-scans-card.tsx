@@ -8,8 +8,8 @@ export function RecentScansCard({ recent_scans }: { recent_scans: DashboardStats
       <CardHeader>
         <CardTitle>Recent scans</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Table>
+      <CardContent className="overflow-auto">
+        <Table className="min-w-[860px]">
           <TableHeader>
             <TableRow>
               <TableHead>scan_id</TableHead>
@@ -23,14 +23,14 @@ export function RecentScansCard({ recent_scans }: { recent_scans: DashboardStats
           </TableHeader>
           <TableBody>
             {recent_scans.map((scan) => (
-              <TableRow key={scan.id}>
-                <TableCell className="font-mono text-xs">{scan.id}</TableCell>
-                <TableCell>{scan.scan_type ?? "full"}</TableCell>
-                <TableCell className="font-mono text-xs">{scan.completed_at}</TableCell>
-                <TableCell className="text-right">{scan.duration_sec}s</TableCell>
-                <TableCell className="text-right">{scan.files_processed}</TableCell>
-                <TableCell className="text-right">{scan.files_skipped ?? 0}</TableCell>
-                <TableCell className="text-right">{scan.findings_count}</TableCell>
+              <TableRow key={scan.id} className="hover:bg-slate-50/80">
+                <TableCell className="font-mono text-[13px]">{scan.id}</TableCell>
+                <TableCell className="font-mono text-[13px]">{scan.scan_type ?? "full"}</TableCell>
+                <TableCell className="font-mono text-[13px]">{scan.completed_at}</TableCell>
+                <TableCell className="text-right font-medium">{scan.duration_sec}s</TableCell>
+                <TableCell className="text-right font-medium">{scan.files_processed}</TableCell>
+                <TableCell className="text-right font-medium">{scan.files_skipped ?? 0}</TableCell>
+                <TableCell className="text-right font-medium">{scan.findings_count}</TableCell>
               </TableRow>
             ))}
           </TableBody>
